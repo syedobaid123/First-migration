@@ -12,7 +12,7 @@ stages:
   - build
   - test
   - sonarqube
-  - deploy
+  - dockerization
 
 build-job:  
   stage: build
@@ -32,9 +32,8 @@ code-quality-job:
     - echo "scanning code"
     -  mvn sonar:sonar -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_LOGIN}
 
-deploy-job:      # This job runs in the deploy stage.
-  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
-  environment: production
+deploy-job:   
+  stage: dockerization
   script:
     - echo "Deploying application..."
-    - echo "Application successfully deployed."
+    - mvn package dockerfile:build -Pdocker

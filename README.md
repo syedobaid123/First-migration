@@ -1,31 +1,47 @@
-# Jenkins-Zero-To-Hero
+# Ultimate CICD Pipeline using GitLab
 
-Are you looking forward to learn Jenkins right from Zero(installation) to Hero(Build end to end pipelines)? then you are at the right place. 
+## Breif Overview 
 
-## Installation on EC2 Instance
+### Create an EC2 instance:
+   -  Create an EC2 instance on AWS.
+   -  Install GitLab Runner on the EC2 instance.
+   -  Register the runner with your GitLab instance.
+   -  Install Java (openjdk-11-jre)
+   -  Install Docker
+   -  Install SonarQube and configure it to run on http://<ip>:9000 [Don't worry detailed steps are provided].
+   -  Open the Inbound ports - 80, 443 and 9000
+   -  Open the Outbound ports - 80 and 443
 
-YouTube Video ->
-https://www.youtube.com/watch?v=zZfhAXfBvVA&list=RDCMUCnnQ3ybuyFdzvgv2Ky5jnAA&index=1
+### Configure GitLab CI/CD Pipeline:
+   - Create a new GitLab repository for your Java application [You can use the sprint-boot provided in the repo]
+   -  Add a `.gitlab-ci.yml` file to the root of your repository.
+   -  The `.gitlab-ci.yml` file should define the steps of the pipeline.
+   -  The first step should be to build the Java application using Maven. 
+   -  The second step should be to run SonarQube analysis on the code. 
+   -  The third step should be to build a Docker image of the application.
+   -  The fourth step should be to push the Docker image to a Docker registry.
+   -  The final step should be to deploy the Docker image to Kubernetes using Argo CD. 
 
+### Configure Argo CD:
+   -  Install Argo CD on your Kubernetes cluster [I would recommend to use the Argo CD Operator]
+   -  Create a new application in Argo CD to deploy your Java application.
+   -  Configure the application to pull the Docker image from the Docker registry.
+   -  Configure the application to use Kubernetes manifests to deploy the application.
 
-![Screenshot 2023-02-01 at 5 46 14 PM](https://user-images.githubusercontent.com/43399466/216040281-6c8b89c3-8c22-4620-ad1c-8edd78eb31ae.png)
+### Test and Deploy:
+   - Push your code changes to GitLab to trigger the pipeline.
+   -  The pipeline will automatically build, test, and deploy your Java application to Kubernetes using Argo CD.
+   -  Monitor the pipeline logs and Argo CD to ensure that the deployment is successful.
 
-Install Jenkins, configure Docker as agent, set up cicd, deploy applications to k8s and much more.
-
-## AWS EC2 Instance
+## AWS EC2 Instance Configuration
 
 - Go to AWS Console
 - Instances(running)
 - Launch instances
 
-<img width="994" alt="Screenshot 2023-02-01 at 12 37 45 PM" src="https://user-images.githubusercontent.com/43399466/215974891-196abfe9-ace0-407b-abd2-adcffe218e3f.png">
+### Install Java.
 
-### Install Jenkins.
-
-Pre-Requisites:
- - Java (JDK)
-
-### Run the below commands to install Java and Jenkins
+Run the below commands to install Java
 
 Install Java
 
@@ -40,72 +56,30 @@ Verify Java is Installed
 java -version
 ```
 
-Now, you can proceed with installing Jenkins
+### Configure a Sonar Server locally
 
 ```
-curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee \
-  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
-  https://pkg.jenkins.io/debian binary/ | sudo tee \
-  /etc/apt/sources.list.d/jenkins.list > /dev/null
-sudo apt-get update
-sudo apt-get install jenkins
+apt install unzip
+adduser sonarqube
+wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.4.0.54424.zip
+unzip *
+chmod -R 755 /home/sonarqube/sonarqube-9.4.0.54424
+chown -R sonarqube:sonarqube /home/sonarqube/sonarqube-9.4.0.54424
+cd sonarqube-9.4.0.54424/bin/linux-x86-64/
+./sonar.sh start
 ```
 
-**Note: ** By default, Jenkins will not be accessible to the external world due to the inbound traffic restriction by AWS. Open port 8080 in the inbound traffic rules as show below.
+**Note: ** By default, SonarQube will not be accessible to the external world due to the inbound traffic restriction by AWS. Open port 9000 in the inbound traffic rules as show below.
 
 - EC2 > Instances > Click on <Instance-ID>
 - In the bottom tabs -> Click on Security
 - Security groups
-- Add inbound traffic rules as shown in the image (you can just allow TCP 8080 as well, in my case, I allowed `All traffic`).
+- Add inbound traffic rules as shown in the image (you can just allow TCP 9000 as well, in my case, I allowed `All traffic`).
 
-<img width="1187" alt="Screenshot 2023-02-01 at 12 42 01 PM" src="https://user-images.githubusercontent.com/43399466/215975712-2fc569cb-9d76-49b4-9345-d8b62187aa22.png">
-
-
-### Login to Jenkins using the below URL:
-
-http://<ec2-instance-public-ip-address>:8080    [You can get the ec2-instance-public-ip-address from your AWS EC2 console page]
-
-Note: If you are not interested in allowing `All Traffic` to your EC2 instance
-      1. Delete the inbound traffic rule for your instance
-      2. Edit the inbound traffic rule to only allow custom TCP port `8080`
-  
-After you login to Jenkins, 
-      - Run the command to copy the Jenkins Admin Password - `sudo cat /var/lib/jenkins/secrets/initialAdminPassword`
-      - Enter the Administrator password
-      
-<img width="1291" alt="Screenshot 2023-02-01 at 10 56 25 AM" src="https://user-images.githubusercontent.com/43399466/215959008-3ebca431-1f14-4d81-9f12-6bb232bfbee3.png">
-
-### Click on Install suggested plugins
-
-<img width="1291" alt="Screenshot 2023-02-01 at 10 58 40 AM" src="https://user-images.githubusercontent.com/43399466/215959294-047eadef-7e64-4795-bd3b-b1efb0375988.png">
-
-Wait for the Jenkins to Install suggested plugins
-
-<img width="1291" alt="Screenshot 2023-02-01 at 10 59 31 AM" src="https://user-images.githubusercontent.com/43399466/215959398-344b5721-28ec-47a5-8908-b698e435608d.png">
-
-Create First Admin User or Skip the step [If you want to use this Jenkins instance for future use-cases as well, better to create admin user]
-
-<img width="990" alt="Screenshot 2023-02-01 at 11 02 09 AM" src="https://user-images.githubusercontent.com/43399466/215959757-403246c8-e739-4103-9265-6bdab418013e.png">
-
-Jenkins Installation is Successful. You can now starting using the Jenkins 
-
-<img width="990" alt="Screenshot 2023-02-01 at 11 14 13 AM" src="https://user-images.githubusercontent.com/43399466/215961440-3f13f82b-61a2-4117-88bc-0da265a67fa7.png">
-
-## Install the Docker Pipeline plugin in Jenkins:
-
-   - Log in to Jenkins.
-   - Go to Manage Jenkins > Manage Plugins.
-   - In the Available tab, search for "Docker Pipeline".
-   - Select the plugin and click the Install button.
-   - Restart Jenkins after the plugin is installed.
-   
-<img width="1392" alt="Screenshot 2023-02-01 at 12 17 02 PM" src="https://user-images.githubusercontent.com/43399466/215973898-7c366525-15db-4876-bd71-49522ecb267d.png">
-
-Wait for the Jenkins to be restarted.
+Hurray !! Now you can access the `SonarQube Server` on `http://<ip-address>:9000` 
 
 
-## Docker Slave Configuration
+## Docker Configuration
 
 Run the below command to Install Docker
 
@@ -113,24 +87,8 @@ Run the below command to Install Docker
 sudo apt update
 sudo apt install docker.io
 ```
- 
-### Grant Jenkins user and Ubuntu user permission to docker deamon.
 
-```
-sudo su - 
-usermod -aG docker jenkins
-usermod -aG docker ubuntu
-systemctl restart docker
-```
-
-Once you are done with the above steps, it is better to restart Jenkins.
-
-```
-http://<ec2-instance-public-ip>:8080/restart
-```
-
-The docker agent configuration is now successful.
-
+All the required configuration is setup !!!
 
 
 

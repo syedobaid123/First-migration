@@ -32,8 +32,13 @@ code-quality-job:
     - echo "scanning code"
     -  mvn sonar:sonar -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_LOGIN}
 
-deploy-job:   
+docker:
   stage: dockerization
+  image: docker:stable
+  services:
+    - docker:dind
   script:
-    - echo "Deploying application..."
-    - docker build -t abhishekf5/gitlab-cicd-demo . 
+    - docker build -t gitlab-cicd-demo:latest .
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - docker tag gitlab-cicd-demo:latest $DOCKER_USERNAME/gitlab-cicd-demo:latest
+    - docker push $DOCKER_USERNAME/gitlab-cicd-demo:latest

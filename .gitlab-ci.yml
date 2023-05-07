@@ -36,4 +36,4 @@ deploy-job:
   stage: dockerization
   script:
     - echo "Deploying application..."
-    - mvn package dockerfile:build -Pdocker
+    - docker build -t . 

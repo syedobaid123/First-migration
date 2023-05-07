@@ -36,4 +36,4 @@ deploy-job:
   stage: dockerization
   script:
     - echo "Deploying application..."
-    - docker build -t . 
+    - docker build -t abhishekf5/gitlab-cicd-demo . 

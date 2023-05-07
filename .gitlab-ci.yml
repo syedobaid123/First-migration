@@ -6,7 +6,7 @@ variables:
 
 # Define the default working directory for the pipeline
 before_script:
-  - cd java-maven-sonar-argocd-helm-k8s/sprint-boot-app
+  - cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
 
 stages:   
   - build

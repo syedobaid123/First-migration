@@ -37,6 +37,8 @@ docker:
   image: docker:19.03
   services:
     - docker:dind
+    - command: ["--storage-driver=overlay2", "-H", "unix:///var/run/docker.sock"]
+
   script:
     - docker build -t gitlab-cicd-demo:latest .
     - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD

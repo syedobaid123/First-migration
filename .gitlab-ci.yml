@@ -12,6 +12,7 @@ stages:
   - build
   - test
 #  - sonarqube
+  - dockerization
 
 build-job:  
   stage: build

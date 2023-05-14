@@ -36,8 +36,8 @@ docker:
   stage: dockerization
   image: docker:19.03
   services:
-    - docker:dind
-    - command: ["--storage-driver=overlay2", "-H", "unix:///var/run/docker.sock"]
+    - name: docker:dind
+      command: ["--storage-driver=overlay2", "-H", "unix:///var/run/docker.sock"]
 
   script:
     - docker build -t gitlab-cicd-demo:latest .
